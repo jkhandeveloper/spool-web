@@ -10,6 +10,7 @@ import type {
   TokenPair,
   User,
 } from './types';
+import type { Insights } from './analytics-types';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -140,4 +141,6 @@ export const api = {
   appointment: (id: string) => get<Appointment>(`/appointments/${id}`),
 
   meditations: () => get<Meditation[]>('/meditations'),
+
+  insights: (days: number, tz: string) => get<Insights>(`/me/insights${qs({ days, tz })}`),
 };

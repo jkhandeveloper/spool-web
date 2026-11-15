@@ -17,6 +17,8 @@
   --warning-surface: #fdf3dc;
   /* Chart tokens (dataviz reference palette, slot 1). */
   --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
   --grid: #ececef;
 
   --radius-sm: 10px;
@@ -43,6 +45,8 @@
     --warning: #f0b84a;
     --warning-surface: #33270e;
     --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
     --grid: #26282d;
   }
 }
@@ -771,4 +775,250 @@ a.list-row:hover > div:first-child > div:last-child {
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
   white-space: nowrap;
   font-size: 13px;
+}
+
+/* ---------- Analytics ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.main-wide {
+  max-width: 1320px;
+}
+.page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.page-toolbar .tabs {
+  align-self: auto;
+}
+.refresh-hint {
+  margin-top: -8px;
+}
+.stats-5 {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.delta {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.delta-good {
+  color: var(--success);
+}
+.delta-bad {
+  color: var(--danger);
+}
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  margin: 0 0 12px;
+}
+.mini-stats dt {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mini-stats dd {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.badge-admin {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 11px;
+}
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.highlight {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+
+/* Legend + tooltip rows */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+.tt-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+.viz-label {
+  fill: var(--text-2);
+  font-size: 12px;
+}
+.viz-crosshair {
+  stroke: var(--text-2);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.table-scroll {
+  overflow-x: auto;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.table-x {
+  overflow-x: auto;
+}
+
+/* Horizontal bar list */
+.barlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.barlist-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.barlist-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.barlist-value .muted {
+  font-weight: 400;
+}
+.barlist-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.barlist-fill {
+  height: 100%;
+  min-width: 2px;
+  border-radius: 999px;
+  background: var(--series-1);
+}
+
+/* Heatmap & cohort shading: one hue, mixed toward the surface (light & dark). */
+.heatmap-wrap {
+  overflow-x: auto;
+}
+.heatmap {
+  display: grid;
+  grid-template-columns: 36px repeat(24, minmax(14px, 1fr));
+  gap: 3px;
+  min-width: 520px;
+}
+.heatmap-row {
+  display: contents;
+}
+.heatmap-day,
+.heatmap-hour {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.heatmap-day {
+  align-self: center;
+}
+.heatmap-hour {
+  overflow: visible;
+}
+.heatmap-cell {
+  --level: 0;
+  aspect-ratio: 1;
+  min-height: 14px;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--series-1) calc(var(--level) * 1%), var(--surface));
+}
+.heatmap-cell.is-hover,
+.heatmap-cell:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+.heatmap-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+.heatmap-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.heatmap-scale .heatmap-cell {
+  width: 14px;
+  min-height: 14px;
+  display: inline-block;
+}
+.cohort-cell {
+  --level: 0;
+  background: color-mix(in oklab, var(--series-1) calc(var(--level) * 0.6%), var(--bg));
+}
+
+/* Users table */
+.th-sort {
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+.th-sort:hover {
+  color: var(--text);
+}
+.users-table td {
+  vertical-align: middle;
+}
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  min-width: 180px;
+}
+.user-cell:hover .row-title {
+  text-decoration: underline;
+}
+.tags-tight {
+  margin: 0;
+  flex-wrap: nowrap;
 }

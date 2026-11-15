@@ -82,7 +82,10 @@ To roll back: `ssh spool-deploy 'cd /opt/spool-web && ls -1t releases'`, then `l
 | `/goals`, `/goals/:id` | Active and past goals, check-in history and completion rate | `GET goals`, `goals?all=true`, `goals/:id` |
 | `/appointments`, `/appointments/:id` | Upcoming and past appointments (180 days each way) | `GET appointments?from&to`, `appointments/:id` |
 | `/meditations`, `/meditations/:id` | Meditation library and timed script | `GET meditations` |
+| `/insights` | The user's own analytics: streaks, active days, activity trend, when they journal, top session topics, goal follow-through | `GET me/insights?days&tz` |
 | `/account` | Profile and settings, JSON data export, sign out | `GET me`, `me/export`, `POST auth/logout` |
+| `/admin` | **Admin analytics** with a separate login (`ADMIN_USERNAME` / `ADMIN_PASSWORD` in spool-api's `.env`): KPIs with change vs the previous period, DAU/WAU/MAU, active users, activity and sign-up trends, activation funnel, weekly retention, weekday × hour heatmap, session/goal/appointment breakdowns | `POST admin/login`, `GET admin/analytics` |
+| `/admin/users`, `/admin/users/:id` | Searchable, sortable user list with usage counts and last activity, plus each user's activity (counts and dates only, no content) | `GET admin/users`, `admin/users/:id` |
 
 The dashboard is read-only for now. Creating and editing still happen in the mobile app, which also owns recording and consent.
 
@@ -92,6 +95,7 @@ The dashboard is read-only for now. Creating and editing still happen in the mob
 - On a 401, the client refreshes once (concurrent requests share one refresh) and retries. If the refresh fails, it returns to sign-in and clears the query cache.
 - **Sign out** clears only this browser. **Sign out everywhere** calls `POST auth/logout`, which revokes every refresh token, including the phone's.
 - The API rate-limits `auth/*` to 10 requests per minute per IP. Every full page load uses one `auth/refresh`.
+- The admin token is kept in `sessionStorage`, separate from user tokens, and expires after `ADMIN_TOKEN_TTL` (8h by default).
 - Transcripts and audio never reach the dashboard. The API never returns them.
 
 ## Code layout

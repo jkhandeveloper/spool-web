@@ -5,6 +5,7 @@ import { Logo } from './ui';
 
 const NAV = [
   { to: '/', label: 'Overview', end: true },
+  { to: '/insights', label: 'Insights' },
   { to: '/sessions', label: 'Sessions' },
   { to: '/journal', label: 'Journal' },
   { to: '/goals', label: 'Goals' },
