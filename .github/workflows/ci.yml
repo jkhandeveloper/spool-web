@@ -1,0 +1,91 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  VITE_API_URL: https://api.spool.zasstech.com/api/v1
+  SITE_URL: https://web.spool.zasstech.com
+
+jobs:
+  build:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      # `build` runs `tsc -b` (typecheck) before `vite build`.
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy to web.spool.zasstech.com
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://web.spool.zasstech.com
+    steps:
+      - name: Check deploy secrets
+        env:
+          HAS_SECRETS: ${{ secrets.DEPLOY_SSH_KEY != '' && secrets.DEPLOY_HOST != '' && secrets.DEPLOY_USER != '' }}
+        run: |
+          if [ "$HAS_SECRETS" != "true" ]; then
+            echo "::error::Add DEPLOY_HOST, DEPLOY_USER and DEPLOY_SSH_KEY repository secrets (see README, Deployment)."
+            exit 1
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # Pinned host key of the server (ssh-keyscan -t ed25519 68.183.89.22).
+          echo "$DEPLOY_HOST ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB4yoO2RSj2qVkEh62y47ZciABhB5iO/D4LU6Rq898+w" > ~/.ssh/known_hosts
+      - name: Upload release and switch
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          RELEASE: ${{ github.run_number }}-${{ github.sha }}
+        run: |
+          SSH="ssh -i ~/.ssh/deploy"
+          $SSH "$TARGET" "mkdir -p /opt/spool-web/releases/$RELEASE"
+          scp -i ~/.ssh/deploy -rq dist/. "$TARGET:/opt/spool-web/releases/$RELEASE/"
+          # Atomic symlink swap, then keep the 5 newest releases.
+          $SSH "$TARGET" "set -e; cd /opt/spool-web \
+            && chmod -R a+rX releases/$RELEASE \
+            && ln -sfn releases/$RELEASE current.tmp && mv -Tf current.tmp current \
+            && ls -1dt releases/* | tail -n +6 | xargs -r rm -rf \
+            && echo 'Live: '\$(readlink current)"
+      - name: Check the live site serves this build
+        run: |
+          asset=$(grep -o '/assets/index-[^"]*\.js' dist/index.html | head -1)
+          for i in $(seq 1 10); do
+            if curl -fsS "$SITE_URL/" | grep -q "$asset" && curl -fsSI "$SITE_URL$asset" >/dev/null; then
+              echo "Serving $asset"; exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::$SITE_URL is not serving $asset"
+          exit 1
