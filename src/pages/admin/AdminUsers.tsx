@@ -53,6 +53,8 @@ export function AdminUsersPage() {
     try {
       await adminApi.deleteUser(id);
       await q.refetch();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'User could not be deleted.');
     } finally {
       setDeleting(null);
     }
