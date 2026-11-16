@@ -25,6 +25,7 @@ export function AdminUsersPage() {
   const page = Math.max(0, Number(params.get('page')) || 0);
   const search = params.get('q') ?? '';
   const [draft, setDraft] = useState(search);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // Debounce typing into the URL (which drives the query).
   useEffect(() => {
@@ -45,6 +46,17 @@ export function AdminUsersPage() {
     queryFn: () => adminApi.users({ search, sort, order, limit: PAGE, offset: page * PAGE }),
     placeholderData: keepPreviousData,
   });
+
+  const removeUser = async (id: string, email: string) => {
+    if (!window.confirm(`Delete ${email} permanently? This removes all of their data and cannot be undone.`)) return;
+    setDeleting(id);
+    try {
+      await adminApi.deleteUser(id);
+      await q.refetch();
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const setSort = (key: SortKey) => {
     const next = new URLSearchParams(params);
@@ -89,6 +101,7 @@ export function AdminUsersPage() {
                     </th>
                   ))}
                   <th>Status</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -111,6 +124,16 @@ export function AdminUsersPage() {
                         {u.journalOnly && <Badge>Journal only</Badge>}
                         {u.graduatedAt && <Badge tone="success">Graduated</Badge>}
                       </div>
+                    </td>
+                    <td className="num">
+                      <button
+                        className="btn btn-danger btn-sm"
+                        type="button"
+                        disabled={deleting === u.id}
+                        onClick={() => void removeUser(u.id, u.email)}
+                      >
+                        {deleting === u.id ? 'Deleting…' : 'Delete'}
+                      </button>
                     </td>
                   </tr>
                 ))}
