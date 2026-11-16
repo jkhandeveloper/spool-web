@@ -25,7 +25,7 @@ export function AdminUsersPage() {
   const page = Math.max(0, Number(params.get('page')) || 0);
   const search = params.get('q') ?? '';
   const [draft, setDraft] = useState(search);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [changing, setChanging] = useState<string | null>(null);
 
   // Debounce typing into the URL (which drives the query).
   useEffect(() => {
@@ -47,16 +47,17 @@ export function AdminUsersPage() {
     placeholderData: keepPreviousData,
   });
 
-  const removeUser = async (id: string, email: string) => {
-    if (!window.confirm(`Delete ${email} permanently? This removes all of their data and cannot be undone.`)) return;
-    setDeleting(id);
+  const toggleUser = async (id: string, email: string, enabled: boolean) => {
+    const action = enabled ? 'disable' : 'enable';
+    if (!window.confirm(`${action[0].toUpperCase() + action.slice(1)} ${email}?`)) return;
+    setChanging(id);
     try {
-      await adminApi.deleteUser(id);
+      await adminApi.setUserEnabled(id, !enabled);
       await q.refetch();
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'User could not be deleted.');
+      window.alert(error instanceof Error ? error.message : `User could not be ${action}d.`);
     } finally {
-      setDeleting(null);
+      setChanging(null);
     }
   };
 
@@ -122,6 +123,7 @@ export function AdminUsersPage() {
                     <td className="num">{u.checkIns}</td>
                     <td>
                       <div className="tags tags-tight">
+                        {!u.enabled && <Badge tone="warning">Disabled</Badge>}
                         {!u.privacyReviewedAt && <Badge tone="warning">Not onboarded</Badge>}
                         {u.journalOnly && <Badge>Journal only</Badge>}
                         {u.graduatedAt && <Badge tone="success">Graduated</Badge>}
@@ -131,10 +133,10 @@ export function AdminUsersPage() {
                       <button
                         className="btn btn-danger btn-sm"
                         type="button"
-                        disabled={deleting === u.id}
-                        onClick={() => void removeUser(u.id, u.email)}
+                        disabled={changing === u.id}
+                        onClick={() => void toggleUser(u.id, u.email, u.enabled)}
                       >
-                        {deleting === u.id ? 'Deleting…' : 'Delete'}
+                        {changing === u.id ? 'Updating…' : u.enabled ? 'Disable' : 'Enable'}
                       </button>
                     </td>
                   </tr>

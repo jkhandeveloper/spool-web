@@ -82,4 +82,5 @@ export const adminApi = {
     request<{ items: AdminUserRow[]; total: number }>('GET', `/admin/users${qs(p)}`),
   user: (id: string, days: number, tz: string) => request<AdminUserDetail>('GET', `/admin/users/${id}${qs({ days, tz })}`),
   deleteUser: (id: string) => request<void>('DELETE', `/admin/users/${id}`),
+  setUserEnabled: (id: string, enabled: boolean) => request<{ enabled: boolean }>('PATCH', `/admin/users/${id}/status`, { enabled }),
 };

@@ -49,6 +49,7 @@ export interface AdminUserRow {
   displayName: string | null;
   createdAt: string;
   journalOnly: boolean;
+  enabled: boolean;
   graduatedAt: string | null;
   privacyReviewedAt: string | null;
   journalEntries: number;
