@@ -162,13 +162,11 @@ button {
   line-height: 1.65;
 }
 
-/* ---------- Logo (tinted via mask so it follows the text colour) ---------- */
+/* ---------- Logo ---------- */
 .logo {
   display: inline-block;
   flex: none;
-  background: currentColor;
-  -webkit-mask: url('/spool-mark.png') center / contain no-repeat;
-  mask: url('/spool-mark.png') center / contain no-repeat;
+  background: url('/spool-logo.jpg') center / contain no-repeat;
 }
 
 /* ---------- Shell ---------- */
