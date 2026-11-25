@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 HOST="${DEPLOY_TARGET:-spool-deploy}"
-API_URL="${VITE_API_URL:-https://api.spool.zasstech.com/api/v1}"
+API_URL="${VITE_API_URL:-https://api.spoolapp.net/api/v1}"
 RELEASE="$(date -u +%Y%m%d%H%M%S)"
 
 VITE_API_URL="$API_URL" npm run build

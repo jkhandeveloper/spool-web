@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  VITE_API_URL: https://api.spool.zasstech.com/api/v1
-  SITE_URL: https://web.spool.zasstech.com
+  VITE_API_URL: https://api.spoolapp.net/api/v1
+  SITE_URL: https://web.spoolapp.net
 
 jobs:
   build:
@@ -35,13 +35,13 @@ jobs:
           retention-days: 7
 
   deploy:
-    name: Deploy to web.spool.zasstech.com
+    name: Deploy to web.spoolapp.net
     needs: build
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://web.spool.zasstech.com
+      url: https://web.spoolapp.net
     steps:
       - name: Check deploy secrets
         env:

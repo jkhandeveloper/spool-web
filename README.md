@@ -34,31 +34,31 @@ CORS_ORIGINS=http://localhost:8081,http://localhost:5173
 |---|---|---|
 | `VITE_API_URL` | `http://<page host>:3000/api/v1` | spool-api base URL including `/api/v1`. It's baked in at build time. |
 
-For production, build with `VITE_API_URL=https://api.spool.zasstech.com/api/v1 npm run build`. Add the dashboard's origin to the API's `CORS_ORIGINS` secret too.
+For production, build with `VITE_API_URL=https://api.spoolapp.net/api/v1 npm run build`. Add the dashboard's origin to the API's `CORS_ORIGINS` secret too.
 
 `dist/` is a static single-page app. The host must serve `index.html` for unknown paths (SPA fallback) so deep links like `/sessions/<id>` work. In nginx that's `try_files $uri /index.html;`.
 
 ## Deployment
 
-Production is **https://web.spool.zasstech.com**, on the same droplet as the API (`68.183.89.22`). See spool-api's DEPLOY.md for SSH access (`spool` = root, `spool-deploy` = deploy user).
+Production is **https://web.spoolapp.net**, on the same droplet as the API (`68.183.89.22`). See spool-api's DEPLOY.md for SSH access (`spool` = root, `spool-deploy` = deploy user).
 
 | What | Where |
 |---|---|
 | Files | `/opt/spool-web/releases/<timestamp>/`, with `/opt/spool-web/current` symlinked to the live one (owned by `deploy`) |
-| nginx site | `/etc/nginx/sites-available/web.spool.zasstech.com` (source: [deploy/nginx/](deploy/nginx/web.spool.zasstech.com.conf)), static files with SPA fallback |
+| nginx site | `/etc/nginx/sites-available/web.spoolapp.net` (source: [deploy/nginx/](deploy/nginx/web.spoolapp.net.conf)), static files with SPA fallback |
 | DNS | Cloudflare `A web.spool → 68.183.89.22`, **DNS only (grey cloud)** like `api.spool` |
-| TLS | Let's Encrypt via `certbot --nginx -d web.spool.zasstech.com --redirect` (auto-renews) |
-| API CORS | `CORS_ORIGINS=https://web.spool.zasstech.com` in `/opt/spool-api/.env` |
+| TLS | Let's Encrypt via `certbot --nginx -d web.spoolapp.net --redirect` (auto-renews) |
+| API CORS | `CORS_ORIGINS=https://web.spoolapp.net` in `/opt/spool-api/.env` |
 
 ### CI/CD
 
 [.github/workflows/ci.yml](.github/workflows/ci.yml):
 
-1. **On every push and pull request:** it runs lint, typecheck and the production build (against `https://api.spool.zasstech.com/api/v1`).
+1. **On every push and pull request:** it runs lint, typecheck and the production build (against `https://api.spoolapp.net/api/v1`).
 2. **On push to `main`** (or Actions → CI/CD → **Run workflow**):
    - It uploads `dist/` over SSH as `deploy` to `/opt/spool-web/releases/<run>-<sha>/`.
    - It switches `current` to the new release atomically and keeps the 5 newest releases.
-   - It checks that https://web.spool.zasstech.com serves the new build.
+   - It checks that https://web.spoolapp.net serves the new build.
 
 It uses these repository secrets, the same values as spool-api's:
 
