@@ -27,3 +27,5 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Local Claude Code guidance (not shipped)
+CLAUDE.md
